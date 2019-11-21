@@ -39,7 +39,7 @@ public class SpringBatchConfig {
 		
 	}
 	
-	
+	//test
 	public FlatFileItemReader<BankTransaction> flatFileItemReader(@Value("${inputFile}") String inputFile){// @Value("${inputFile}")  permet d'injecter une valeur qui provient du fichier application.properties, l'annotation @Value permet d'aller chercher dans le fichier de ressources
 		
 		
