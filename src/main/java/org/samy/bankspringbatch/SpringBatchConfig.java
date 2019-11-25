@@ -10,12 +10,15 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.LineMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 
 @Configuration
-@EnableBatchProcessing // permt de charger un exsemble de lignes de spring batch
+@EnableBatchProcessing // permt de charger un exsemble de lignes de spring batch comme JobBuilderFactory et StepBuilderFactory
 public class SpringBatchConfig {
 	
 	@Autowired private JobBuilderFactory jobBuilderFactory;
@@ -40,10 +43,22 @@ public class SpringBatchConfig {
 	}
 	
 	//test
-	public FlatFileItemReader<BankTransaction> flatFileItemReader(@Value("${inputFile}") String inputFile){// @Value("${inputFile}")  permet d'injecter une valeur qui provient du fichier application.properties, l'annotation @Value permet d'aller chercher dans le fichier de ressources
+	@Bean
+	public FlatFileItemReader<BankTransaction> flatFileItemReader(@Value("${inputFile}") Resource inputFile){// @Value("${inputFile}")  permet d'injecter une valeur qui provient du fichier application.properties, l'annotation @Value permet d'aller chercher dans le fichier de ressources
+		FlatFileItemReader<BankTransaction>fileItemReader = new FlatFileItemReader<BankTransaction>();
+		fileItemReader.setName("FFIR1");
+		fileItemReader.setLinesToSkip(1);
+		fileItemReader.setResource(inputFile);
+		fileItemReader.setLineMapper(lineMapper());
 		
+		return fileItemReader;
 		
-		
+				
+	}
+
+	public LineMapper<BankTransaction> lineMapper() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
