@@ -11,6 +11,9 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +31,7 @@ public class SpringBatchConfig {
 	@Autowired private ItemProcessor<BankTransaction,BankTransaction> bankTransactionItemProcessor;
 	
 	
-	
+	@Bean // sans ca l'objet ne sera pas instancié au demarrage
 	public Job bankJob() {
 		Step step1 = stepBuilderFactory.get("step-load-data")
 				    .<BankTransaction,BankTransaction>chunk(100) // il faut absolument specifier le diamant <BankTransaction,BankTransaction>
@@ -57,9 +60,36 @@ public class SpringBatchConfig {
 	}
 
 	public LineMapper<BankTransaction> lineMapper() {
-		// TODO Auto-generated method stub
-		return null;
+
+		DefaultLineMapper<BankTransaction> lineMapper = new DefaultLineMapper<BankTransaction>();
+		DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
+		lineTokenizer.setDelimiter(",");
+		lineTokenizer.setStrict(false);
+		lineTokenizer.setNames("id","accountID","strTransactionDate","transactionType","amount");
+		lineMapper.setLineTokenizer(lineTokenizer);
+		BeanWrapperFieldSetMapper<BankTransaction> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+		fieldSetMapper.setTargetType(BankTransaction.class);
+		lineMapper.setFieldSetMapper(fieldSetMapper);
+		return lineMapper;
+		
 	}
+	
+	
+//	public ItemProcessor<BankTransaction,BankTransaction> itemProcessor(){
+//		return new ItemProcessor<BankTransaction,BankTransaction>(){
+//
+//			@Override
+//			public BankTransaction process(BankTransaction bankTransaction) throws Exception {
+//
+//				
+//				
+//				
+//				return null;
+//			}
+//			
+//		}
+//		
+//	}
 	
 	
 
