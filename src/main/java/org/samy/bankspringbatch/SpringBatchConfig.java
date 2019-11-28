@@ -1,5 +1,8 @@
 package org.samy.bankspringbatch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.samy.bankspringbatch.dao.BankTransaction;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -14,6 +17,7 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.support.CompositeItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +32,7 @@ public class SpringBatchConfig {
 	@Autowired private StepBuilderFactory stepBuilderFactory;
 	@Autowired private ItemReader<BankTransaction> bankTransactionItemReader;
 	@Autowired private ItemWriter<BankTransaction> bankTransactionItemWriter;
-	@Autowired private ItemProcessor<BankTransaction,BankTransaction> bankTransactionItemProcessor;
+	//@Autowired private ItemProcessor<BankTransaction,BankTransaction> bankTransactionItemProcessor;
 	
 	
 	@Bean // sans ca l'objet ne sera pas instancié au demarrage
@@ -36,7 +40,8 @@ public class SpringBatchConfig {
 		Step step1 = stepBuilderFactory.get("step-load-data")
 				    .<BankTransaction,BankTransaction>chunk(100) // il faut absolument specifier le diamant <BankTransaction,BankTransaction>
 				    .reader(bankTransactionItemReader)
-				    .processor(bankTransactionItemProcessor)
+				 //   .processor(bankTransactionItemProcessor)
+				    .processor(compositeItemProcessor())//compositeItemProcessor est un composite (on dit aussi pipeline), c'est une liste chainée de plusieurs processeurs
 				    .writer(bankTransactionItemWriter)
 				    .build();
 		
@@ -45,6 +50,41 @@ public class SpringBatchConfig {
 		
 	}
 	
+	
+	@Bean
+	public ItemProcessor<BankTransaction,BankTransaction> compositeItemProcessor() {
+		List<ItemProcessor<BankTransaction,BankTransaction>> itemProcessors = new ArrayList<>();
+		itemProcessors.add(itemProcessor1());
+		itemProcessors.add(itemProcessor2());
+		
+		CompositeItemProcessor<BankTransaction,BankTransaction> compositeItemProcessor = new CompositeItemProcessor<>();
+		compositeItemProcessor.setDelegates(itemProcessors);
+		
+		return compositeItemProcessor;
+		
+		
+		
+		
+	}
+	
+	
+	@Bean
+	public BankTransactionItemProcessor itemProcessor1() {
+		return new BankTransactionItemProcessor(); // ce processor va convertir la date au bon format
+	}
+
+	
+	@Bean
+	public BankTransactionItemAnalyticsProcessor itemProcessor2() {
+		return new BankTransactionItemAnalyticsProcessor();
+	}
+	
+	
+	
+	
+	
+	
+
 	//test
 	@Bean
 	public FlatFileItemReader<BankTransaction> flatFileItemReader(@Value("${inputFile}") Resource inputFile){// @Value("${inputFile}")  permet d'injecter une valeur qui provient du fichier application.properties, l'annotation @Value permet d'aller chercher dans le fichier de ressources

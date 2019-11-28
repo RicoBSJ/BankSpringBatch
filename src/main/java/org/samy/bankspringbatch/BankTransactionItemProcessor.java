@@ -6,7 +6,7 @@ import org.samy.bankspringbatch.dao.BankTransaction;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component  // en enlevant cette annotation cela signifie qu'il n'est pas instancié
 public class BankTransactionItemProcessor implements ItemProcessor<BankTransaction,BankTransaction>{
 	
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy-HH:mm");

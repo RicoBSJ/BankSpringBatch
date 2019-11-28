@@ -24,6 +24,9 @@ public class JobRestController {
 	@Autowired
 	private Job job;
 	
+	@Autowired
+	private BankTransactionItemAnalyticsProcessor analyticsProcessor;
+	
 	@GetMapping("/startJob")
 	public BatchStatus load() throws Exception{
 		Map<String,JobParameter> params = new HashMap<>();
@@ -36,6 +39,19 @@ public class JobRestController {
 		return jobExecution.getStatus();
 		
 	}
+	
+	
+	@GetMapping("/analytics")
+	public Map<String,Double> analytics(){
+		//on stocke les resultats ici on pourrait le faire dans une variable
+		Map<String,Double> map = new HashMap<>();
+		map.put("totalCredit",analyticsProcessor.getTotalCredit());
+		map.put("totalDebit",analyticsProcessor.getTotalDebit());
+		
+		return map;
+	}
+	
+	
 	
 
 }
